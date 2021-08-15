@@ -1,0 +1,21 @@
+[
+    {
+        "id":1,
+"product":{
+    "title":"Ejemplo1",
+    "price":185,
+    "thumbnail":"link/ejemplo1.jpg"}
+    },
+{"id":2,
+"product":{
+    "title":"Ejemplo2",
+    "price":300,
+    "thumbnail":"link/ejemplo2.jpg"}
+    },
+{"id":3,
+"product":{
+    "title":"Ejemplo3",
+    "price":450,
+    "thumbnail":"link/ejemplo3.jpg"}
+    }
+    ]
