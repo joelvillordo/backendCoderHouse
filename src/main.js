@@ -1,6 +1,8 @@
 const express = require("express");
 
 const fs = require("fs");
+//Contenedor desde archivo
+const Contenedor = require("./contenedor.js");
 
 const router = express.Router();
 
@@ -17,88 +19,13 @@ app.listen(PORT, () => {
   console.log(`Server corriendo en ${PORT}`);
 });
 
-//Usando la clase Contenedor
-const item1 = {
-  title: "Ejemplo1",
-  price: 185,
-  thumbnail: "link/ejemplo1.jpg",
-};
-const item2 = {
-  title: "Ejemplo2",
-  price: 300,
-  thumbnail: "link/ejemplo2.jpg",
-};
-const item3 = {
-  title: "Ejemplo3",
-  price: 450,
-  thumbnail: "link/ejemplo3.jpg",
-};
-
-class Contenedor {
-  constructor(archivo) {
-    this.archivo = archivo;
-  }
-  async save(object) {
-    await this.getAll();
-    this.id++;
-    this.data.push({
-      id: this.id,
-      product: object,
-    });
-    try {
-      await fs.promises.writeFile(this.archivo, JSON.stringify(this.data));
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async getById(id) {
-    try {
-      const lista = JSON.parse(
-        await fs.promises.readFile(this.archivo, "utf-8")
-      );
-
-      const productById = lista.find((product) => product.id == id);
-
-      const resultado = productById ? productById : null;
-
-      return resultado;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async getAll() {
-    try {
-      const data = await fs.promises.readFile(this.archivo, "utf-8");
-      if (data) {
-        this.data = JSON.parse(data);
-        this.data.map((producto) => {
-          if (this.id < producto.id) this.id = producto.id;
-        });
-      }
-    } catch (error) {
-      return;
-    }
-  }
-  async deleteById(id) {
-    const data = JSON.parse(await fs.promises.readFile(this.archivo, "utf-8"));
-    const newData = JSON.stringify(
-      data.filter((producto) => producto.id !== id)
-    );
-    console.log(newData);
-    fs.promises.writeFile(this.archivo, newData, "utf-8");
-  }
-  async deleteAll() {
-    await fs.promises.unlink(this.archivo, "utf-8");
-  }
-}
-
 const productos = new Contenedor("productos.txt");
 
 //Desafio 4
 //GET '/api/productos' -> devuelve todos los productos.
 router.get("/", async (req, res) => {
   let productos = [];
-  const data = JSON.parse(fs.readFileSync("productos.txt", "utf-8"));
+  const data = JSON.parse(await fs.promises.readFile("productos.txt", "utf-8"));
   productos.push(data.map((item) => item));
   res.json(productos);
 });
@@ -122,11 +49,20 @@ router.post("/", async (req, res) => {
 
   res.json(body);
 });
+//PUT '/api/productos/:id' -> recibe y actualiza un producto según su id.
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const { body } = req;
+  await productos.updateById(id, body);
+  res.send(`Producto actualizado id:${id}`);
+});
+
 //DELETE '/api/productos/:id' -> elimina un producto según su id.
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
-  await productos.deleteById(id);
+  await productos.deleteById(id, body);
 
   res.json(`Producto eliminado ${id}`);
 });
